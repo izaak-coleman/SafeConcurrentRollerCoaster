@@ -24,7 +24,9 @@ COASTERCAR(N=MCar)
       +{{requestPassenger,getPassenger}[1..MCar]}.
 
 // controls access to the platform
-PLATFORMACCESS = ({arrive,depart} -> PLATFORMACCESS).
+//PLATFORMACCESS = ({arrive,depart} -> PLATFORMACCESS).
+PLATFORMACCESS = (arrive -> depart -> PLATFORMACCESS).
+
 
 // system with two coaster cars with capacity two and three
 ||ROLLERCOASTER
@@ -34,3 +36,25 @@ PLATFORMACCESS = ({arrive,depart} -> PLATFORMACCESS).
            || car[2]:COASTERCAR(3)
            )
            /{newPassenger/car[1..2].newPassenger}.
+
+
+// when newPassenger arrives:
+// 	- check to see if platform is full "when (count < Max)
+//  - if so, CONTROL is incremented, adding a single passenger to platform
+//  - 
+
+// a COSTERCAR can arrive concurrently as arrive is not a shared action. - possibly need to make PLATFORM ACCESS am mutex
+// upon arrival, the COSTERCAR performs requestPassenger[N]. This requests the Mcar
+// number of passengers - rhis is specified by the COASTERCAR(2) or COASTERCAR(3)
+// at the same time, the shared action requirestPassenger[2/3] is called in CONTROL
+// this sets n to 2/3. Now CONTROL recurses back to CONTROL passing n is as CONTROL[count][n] <- n is request of 2/3, count is current platform load
+// Now, getPassenger is also a shared action between COASTERCAR and CONTROL. getPassenger can only be performed when n (now carsize) was a request
+// greater than 0, and only when the number of people on the platform is greater or equal to the request . This means, the people in the car
+// have to wait untill the car is filled as mentioned in spec. This is also the reason the car is not able to move until its request is hit
+
+// after getPassenger is called, the coaster car departs and returns to COASTERCAR (effectively an empty coaster because the next action is arrive where it
+//is empty. CONTROL returns to a state of CONTROL[count-carSize][0]. This means the number of people on the platform is decreased by the number
+// of people who departed on the coaster, and the request value is reset to 0.
+
+
+
